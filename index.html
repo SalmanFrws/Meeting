@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Scheduler</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        #scheduler-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .scheduler-section {
+            width: 48%;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .scheduler-section:hover {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        form {
+            max-width: 300px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .dropdown-container:hover .dropdown-content {
+            display: block;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Animation for the flashes */
+        .flashes li {
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>STARZ MEETING</h1>
+
+    <div id="scheduler-container">
+        <div class="scheduler-section">
+            <h2>Schedule Meeting</h2>
+            <form method="post" id="meetingForm">
+                <label for="scheduler_name">Select Scheduler Name:</label>
+                <select name="scheduler_names" required>
+                    {% for scheduler in scheduler_names %}
+                        <option value="{{ scheduler }}">{{ scheduler }}</option>
+                    {% endfor %}
+                </select> <br><br>
+
+                <label for="selected_slot">Select Time Slot:</label>
+                <select name="selected_slot" required>
+                    {% for slot in available_slots %}
+                        <option value="{{ slot }}">{{ slot }}</option>
+                    {% endfor %}
+                </select><br><br>
+
+                <!-- <label for="participant_names">Select Participants:</label> -->
+                <div class="dropdown-container">
+                    <span id="selectedParticipants">Select Participant</span>
+                    <div class="dropdown-content">
+                        {% for participant in available_participants %}
+                            <label>
+                                <input type="checkbox" name="participant_names" value="{{ participant }}">
+                                {{ participant }}
+                            </label><br>
+                        {% endfor %}
+                    </div>
+                </div><br><br>
+
+                <button type="submit">Schedule Meeting</button>
+            </form>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul class="flashes">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="scheduler-section">
+            <h2>Booked Slots</h2>
+            <ul>
+                {% for slot, info in booked_slots.items() %}
+                    <li>{{ slot }} - {{ info.scheduler_name }} ({{ info.participant_names }})</li>
+                {% endfor %}
+                {% for meeting in meeting_history %}
+                    <li>{{ meeting.timestamp }} - {{ meeting.scheduler_name }} -{{ meeting.selected_slot }} ({{meeting.selected_participants }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Script to dynamically display selected participants
+        const selectedParticipantsSpan = document.getElementById('selectedParticipants');
+        const dropdownContent = document.querySelector('.dropdown-content');
+
+        document.querySelectorAll('.dropdown-content input').forEach((checkbox) => {
+            checkbox.addEventListener('change', function () {
+                const selectedParticipants = Array.from(document.querySelectorAll('.dropdown-content input:checked')).map((checkbox) => checkbox.value);
+                selectedParticipantsSpan.innerText = selectedParticipants.length > 0 ? `Participants Added: ${selectedParticipants.join(', ')}` : 'Select Participant';
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
